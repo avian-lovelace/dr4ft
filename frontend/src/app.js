@@ -45,6 +45,9 @@ let App = {
     cards: 15,
     packs: 3,
     cubePoolSize: 90,
+    cubeRarePerPack: false,
+    raresList: "",
+    nonRaresList: "",
 
     addBots: true,
     shufflePlayers: true,

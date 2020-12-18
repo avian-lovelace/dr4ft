@@ -3,16 +3,27 @@ import axios from "axios";
 
 import TextArea from "../components/TextArea";
 import App from "../app";
+import Checkbox from "../components/Checkbox";
 
 const CubeList = () => {
   return (<div id='cube-list'>
-    <div>
-      <CubeCobra />
-    </div>
-    <br />
-    <div>
-      <ManualCubeInput />
-    </div>
+    <Checkbox link='cubeRarePerPack' side='right' text='One rare per pack: ' />
+    {App.state.cubeRarePerPack ? (
+      <div>
+        <RarePerPackInput />
+      </div>
+    ) : (
+      <>
+        <div>
+          <CubeCobra />
+        </div>
+        <br />
+        <div>
+          <ManualCubeInput />
+        </div>
+      </>
+    )}
+    
   </div>
   );
 };
@@ -31,6 +42,34 @@ const ManualCubeInput = () => {
         link='list'
       />
     </Fragment>
+  );
+};
+
+const RarePerPackInput = () => {
+  const raresListLength =
+    App.state.raresList.length === 0
+      ? 0
+      : App.state.raresList.split("\n").length;
+  const nonRaresListLength =
+      App.state.nonRaresList.length === 0
+        ? 0
+        : App.state.nonRaresList.split("\n").length;
+
+  return (
+    <>
+      <div>{`Copy and paste your cube below with one card per line. One card per pack will be selected from the rare pool and the rest from the non-rare pool.`}</div>
+      <div>{`Rare pool: (${raresListLength} cards)`}</div>
+      <TextArea className="cube-list"
+        placeholder='Rares'
+        link='raresList'
+      />
+
+      <div>{`Non-rare pool: (${nonRaresListLength} cards)`}</div>
+      <TextArea className="cube-list"
+        placeholder='Non-rares'
+        link='nonRaresList'
+      />
+    </>
   );
 };
 

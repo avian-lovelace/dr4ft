@@ -32,6 +32,21 @@ const DraftCube = ({ cubeList, playersLength, packsNumber = 3, playerPackSize = 
     .map(addCardIdsToBoosterCards);
 };
 
+const DraftCubeRarePerPack = ({ raresList, nonRaresList, playersLength, packsNumber = 3, playerPackSize = 15 }) => {
+  const rares = shuffle(raresList);
+  const nonRares = shuffle(nonRaresList);
+
+  return range(playersLength * packsNumber)
+    .map((index) => {
+      const packRare = rares[index];
+      const packNonRares = nonRares.splice(0, playerPackSize - 1);
+      console.log(packRare);
+      console.log(packNonRares[0])
+      return [packRare, ...packNonRares].map(getCardByName);
+    })
+    .map(addCardIdsToBoosterCards);
+};
+
 // Replace RNG set with real set
 const replaceRNGSet = (sets) => (
   sets.map(set => set === "RNG" ? getRandomSet().code : set)
@@ -108,5 +123,6 @@ module.exports = {
   SealedNormal,
   DraftNormal,
   SealedChaos,
-  DraftChaos
+  DraftChaos,
+  DraftCubeRarePerPack
 };

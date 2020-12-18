@@ -10,37 +10,74 @@ const BASICS = [
 ];
 
 function controlCubeSettingsAndTransformList(cube, seats, type) {
-  let {list, cards, packs, cubePoolSize, burnsPerPack} = cube;
+  let {list, cards, packs, cubePoolSize, burnsPerPack, cubeRarePerPack, raresList, nonRaresList} = cube;
 
-  assert(typeof list === "string", "cube.list must be a string");
+  assert(typeof cubeRarePerPack === "boolean", "cube.cubeRarePerPack must be a boolean")
   assert(typeof cards === "number", "cube.cards must be a number");
   assert(typeof cubePoolSize === "number", "cube.cubePoolSize must be a number");
   assert(5 <= cards && cards <= 30, "cube.cards range must be between 5 and 30");
   assert(typeof packs === "number", "cube.packs must be a number");
   assert(1 <= packs && packs <= 12, "cube.packs range must be between 1 and 12");
   assert(0 <= burnsPerPack && burnsPerPack <= 4, "cube.burnsPerPack range must be between 0 and 4");
+  
+  if (cubeRarePerPack) {
+    assert(type === "cube draft", "One rare per pack is currently only supported for drafts")
+    assert(typeof raresList === "string", "cube.raresList must be a string");
+    assert(typeof nonRaresList === "string", "cube.nonRaresList must be a string");
 
-  list = list.split("\n");
+    raresList = raresList.split("\n");
+    nonRaresList = nonRaresList.split("\n");
 
-  const min = type === "cube draft"
-    ? seats * cards * packs
-    : seats * cubePoolSize;
-  assert(min <= list.length && list.length <= 1e5,
-    `The cube needs between ${min} and 100 000 cards with this settings, it has ${list.length}`);
+    // TODO: deal with sealed
+    const minRares = seats * packs
+    const minNonRares = seats * (cards - 1) * packs
+    assert(minRares <= raresList.length && raresList.length <= 1e5,
+      `The cube needs between ${minRares} and 100 000 cards in the rare pool with this settings, it has ${raresList.length}`);
+    assert(minNonRares <= nonRaresList.length && nonRaresList.length <= 1e5,
+      `The cube needs between ${minNonRares} and 100 000 cards in the non-rare pool with this settings, it has ${nonRaresList.length}`);
+      
+    const bad = [];
+    for (let cardName of raresList)
+      if (!getCardByName(cardName))
+        bad.push(cardName);
+    for (let cardName of nonRaresList)
+      if (!getCardByName(cardName))
+        bad.push(cardName);
 
-  const bad = [];
-  for (let cardName of list)
-    if (!getCardByName(cardName))
-      bad.push(cardName);
+    if (bad.length) {
+      let msg = `Invalid cards: ${bad.splice(-10).join("; ")}`;
+      if (bad.length)
+        msg += `; and ${bad.length} more`;
+      throw Error(msg);
+    }
 
-  if (bad.length) {
-    let msg = `Invalid cards: ${bad.splice(-10).join("; ")}`;
-    if (bad.length)
-      msg += `; and ${bad.length} more`;
-    throw Error(msg);
+    cube.raresList = raresList;
+    cube.nonRaresList = nonRaresList;
+  } else {
+    assert(typeof list === "string", "cube.list must be a string");
+
+    list = list.split("\n");
+  
+    const min = type === "cube draft"
+      ? seats * cards * packs
+      : seats * cubePoolSize;
+    assert(min <= list.length && list.length <= 1e5,
+      `The cube needs between ${min} and 100 000 cards with this settings, it has ${list.length}`);
+  
+    const bad = [];
+    for (let cardName of list)
+      if (!getCardByName(cardName))
+        bad.push(cardName);
+  
+    if (bad.length) {
+      let msg = `Invalid cards: ${bad.splice(-10).join("; ")}`;
+      if (bad.length)
+        msg += `; and ${bad.length} more`;
+      throw Error(msg);
+    }
+  
+    cube.list = list;
   }
-
-  cube.list = list;
 }
 
 module.exports = {

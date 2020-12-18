@@ -44,7 +44,8 @@ module.exports = class Game extends Room {
       this.isDecadent = true;
       break;
     case "cube draft":
-      this.packsInfo = `${cube.packs} packs with ${cube.cards} cards from a pool of ${cube.list.length} cards`;
+      const cubeDraftNumCards = cube.cubeRarePerPack ? cube.raresList.length + cube.nonRaresList.length : cube.list.length;
+      this.packsInfo = `${cube.packs} packs with ${cube.cards} cards from a pool of ${cubeDraftNumCards} cards`;
       if (cube.burnsPerPack > 0) {
         this.packsInfo += ` and ${cube.burnsPerPack} cards to burn per pack`;
       }
@@ -337,7 +338,11 @@ module.exports = class Game extends Room {
       }
     });
     const cubeHash = /cube/.test(this.type)
-      ? crypto.createHash("SHA512").update(this.cube.list.join("")).digest("hex")
+      ? crypto.createHash("SHA512").update(
+          this.cube.cubeRarePerPack
+            ? [...this.cube.raresList, ...this.cube.nonRaresList].join("")
+            : this.cube.list.join("")
+          ).digest("hex")
       : "";
 
     const draftcap = {
@@ -462,12 +467,23 @@ module.exports = class Game extends Room {
   createPool() {
     switch (this.type) {
     case "cube draft": {
-      this.pool = Pool.DraftCube({
-        cubeList: this.cube.list,
-        playersLength: this.players.length,
-        packsNumber: this.cube.packs,
-        playerPackSize: this.cube.cards
-      });
+      if(this.cube.cubeRarePerPack) {
+        this.pool = Pool.DraftCubeRarePerPack({
+          raresList: this.cube.raresList,
+          nonRaresList: this.cube.nonRaresList,
+          playersLength: this.players.length,
+          packsNumber: this.cube.packs,
+          playerPackSize: this.cube.cards,
+          cubeRarePerPack: this.cube.cubeRarePerPack
+        });
+      } else {
+        this.pool = Pool.DraftCube({
+          cubeList: this.cube.list,
+          playersLength: this.players.length,
+          packsNumber: this.cube.packs,
+          playerPackSize: this.cube.cards,
+        });
+      }
       break;
     }
     case "cube sealed": {
@@ -608,7 +624,11 @@ module.exports = class Game extends Room {
     `cubePoolSize: ${this.cube.cubePoolSize}
     packsNumber: ${this.cube.packs}
     playerPackSize: ${this.cube.cards}
-    cube: ${truncate(this.cube.list, 30)}`
+    cubeRarePerPack: ${this.cube.cubeRarePerPack}
+    ${this.cube.cubeRarePerPack
+    ? `cube: ${truncate(this.cube.list, 30)}`
+    : `cubeRares: ${truncate(this.cube.raresList, 30)}
+    cubeNonRares: ${truncate(this.cube.nonRaresList, 30)}`}`
     : ""}`;
   }
 

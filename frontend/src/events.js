@@ -123,7 +123,7 @@ const events = {
     // OR change backend to accept "regular draft" instead of "draft" and "regular sealed" instead of "sealed"
     const type = `${/regular/.test(gamesubtype) ? "" : gamesubtype + " "}${gametype}`;
 
-    let options = {type, seats, title, isPrivate, modernOnly, totalChaos,picksPerPack};
+    let options = {type, seats, title, isPrivate, modernOnly, totalChaos, picksPerPack};
 
     switch (gamesubtype) {
     case "regular": {
@@ -363,12 +363,23 @@ ${codify(App.state.gameState.get(ZONE_SIDEBOARD))}
 };
 
 const parseCubeOptions = () => {
-  let {list, cards, packs, cubePoolSize, burnsPerPack} = App.state;
+  let {list, cards, packs, cubePoolSize, burnsPerPack, cubeRarePerPack, raresList, nonRaresList} = App.state;
   cards = Number(cards);
   packs = Number(packs);
   cubePoolSize = Number(cubePoolSize);
 
-  list = list
+  if (cubeRarePerPack) {
+    raresList = parseCardList(raresList);
+    nonRaresList = parseCardList(nonRaresList);
+    return {raresList, nonRaresList, cards, packs, burnsPerPack, cubePoolSize, cubeRarePerPack};
+  } else {
+    list = parseCardList(list);
+    return {list, cards, packs, burnsPerPack, cubePoolSize, cubeRarePerPack};
+  }
+};
+
+const parseCardList = (list) =>
+  list
     .split("\n")
     .map(x => x
       .trim()
@@ -377,9 +388,6 @@ const parseCubeOptions = () => {
       .toLowerCase())
     .filter(x => x)
     .join("\n");
-
-  return {list, cards, packs, cubePoolSize, burnsPerPack};
-};
 
 const clickPack = (card) => {
   if (!App.state.gameState.isPick(card.cardId)) {
