@@ -28,6 +28,7 @@ const GameSettings = () => (
           <Checkbox side="left" text="Hide your picks" link="hidepicks" />
         }
         <Checkbox side="left" text="Use column view" link="cols" />
+        <SortPack />
         <SortCards />
         <CardsImageQuality />
         {App.state.cardSize != "text" && <CardsImageLanguage />}
@@ -36,9 +37,38 @@ const GameSettings = () => (
   </div>
 );
 
+const SortPack = () => (
+  <div className="sort-cards">
+    Sort pack by:
+    <div className='connected-container' >
+      {["CMC", "Color", "Type", "Rarity"].map((sort, index) => {
+        const isActive = sort.toLowerCase() === App.state.packSort
+
+        return (
+          <label key={index} 
+            className={isActive
+              ? "active connected-component"
+              : "connected-component"
+            }
+          >
+            <input checked= {isActive}
+              className='radio-input'
+              name= 'sort-order'
+              onChange= {e => App.save("packSort", e.currentTarget.value)}
+              type='radio'
+              value={sort.toLowerCase()}
+            />
+            <div>{sort}</div>
+          </label>
+        )
+      })}
+    </div>
+  </div>
+);
+
 const SortCards = () => (
   <div className="sort-cards">
-    Sort cards by:
+    Sort picks by:
     <div className='connected-container' >
       {["CMC", "Color", "Type", "Rarity"].map((sort, index) => {
         const isActive = sort.toLowerCase() === App.state.sort
