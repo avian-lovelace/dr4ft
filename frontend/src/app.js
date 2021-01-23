@@ -4,6 +4,7 @@ import {STRINGS} from "./config";
 import eio from "engine.io-client";
 import {times, constant} from "lodash";
 import GameState from "./gamestate";
+import {ZONE_PACK} from "./zones";
 
 function message(msg) {
   let args = JSON.parse(msg);
@@ -58,13 +59,14 @@ let App = {
     notify: false,
     notificationGranted: false,
     chat: false,
-    cols: false,
+    cols: true,
     hidepicks: false,
     deckSize: 40,
     filename: "filename",
     filetype: "txt",
     side: false,
-    sort: "rarity",
+    packSort: "rarity",
+    sort: "cmc",
     log: {},
     cardSize: "normal",
     cardLang: "en",
@@ -241,7 +243,7 @@ let App = {
     return App.state.gameState.get(zoneName);
   },
   getSortedZone(zoneName) {
-    return App.state.gameState.getSortedZone(zoneName, App.state.sort);
+    return App.state.gameState.getSortedZone(zoneName, zoneName === ZONE_PACK ? App.state.packSort : App.state.sort);
   }
 };
 
