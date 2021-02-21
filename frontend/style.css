@@ -262,6 +262,11 @@ input[type="checkbox"], input[type="radio"] {
   flex-direction: column;
 }
 
+#cube-categories {
+  display: flex;
+  flex-direction: column;
+}
+
 #preset-cubes {
   margin-left: 4px;
 }

@@ -10,9 +10,8 @@ const BASICS = [
 ];
 
 function controlCubeSettingsAndTransformList(cube, seats, type) {
-  let {list, cards, packs, cubePoolSize, burnsPerPack} = cube;
+  let {categories, cards, packs, cubePoolSize, burnsPerPack} = cube;
 
-  assert(typeof list === "string", "cube.list must be a string");
   assert(typeof cards === "number", "cube.cards must be a number");
   assert(typeof cubePoolSize === "number", "cube.cubePoolSize must be a number");
   assert(5 <= cards && cards <= 30, "cube.cards range must be between 5 and 30");
@@ -20,27 +19,31 @@ function controlCubeSettingsAndTransformList(cube, seats, type) {
   assert(1 <= packs && packs <= 12, "cube.packs range must be between 1 and 12");
   assert(0 <= burnsPerPack && burnsPerPack <= 4, "cube.burnsPerPack range must be between 0 and 4");
 
-  list = list.split("\n");
+  const categoryPickSum = categories.map(category => category.numSlots).reduce((x, y) => x + y, 0);
+  assert(categoryPickSum === cards, `The sum of cards per category (${categoryPickSum}) must equal the pack size (${cards})`);
 
-  const min = type === "cube draft"
-    ? seats * cards * packs
-    : seats * cubePoolSize;
-  assert(min <= list.length && list.length <= 1e5,
-    `The cube needs between ${min} and 100 000 cards with this settings, it has ${list.length}`);
+  categories = categories.map((category, index) => {
+    const min = category.numSlots * packs * seats
+    const list = category.list.split("\n");
+    assert(min <= list.length && list.length <= 1e5,
+      `Category ${index + 1} needs between ${min} and 100 000 cards with this settings, it has ${list.length}`);
 
-  const bad = [];
-  for (let cardName of list)
-    if (!getCardByName(cardName))
-      bad.push(cardName);
+    const bad = [];
+    for (let cardName of list)
+      if (!getCardByName(cardName))
+        bad.push(cardName);
+  
+    if (bad.length) {
+      let msg = `Invalid cards: ${bad.splice(-10).join("; ")}`;
+      if (bad.length)
+        msg += `; and ${bad.length} more`;
+      throw Error(msg);
+    }
 
-  if (bad.length) {
-    let msg = `Invalid cards: ${bad.splice(-10).join("; ")}`;
-    if (bad.length)
-      msg += `; and ${bad.length} more`;
-    throw Error(msg);
-  }
+    return { numSlots: category.numSlots, list: list };
+  })
 
-  cube.list = list;
+  cube.categories = categories;
 }
 
 module.exports = {

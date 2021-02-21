@@ -1,7 +1,8 @@
 import React, { useState, Fragment } from "react";
 import axios from "axios";
 
-import TextArea from "../components/TextArea";
+import utils from "utils/utils";
+import Select from "../components/Select";
 import App from "../app";
 
 const CubeList = () => {
@@ -18,18 +19,44 @@ const CubeList = () => {
 };
 
 const ManualCubeInput = () => {
-  const cubeListLength =
-    App.state.list.length === 0
-      ? 0
-      : App.state.list.split("\n").length;
-
+  
   return (
     <Fragment>
-      <div>{`Or copy and paste your cube. One card per line! (${cubeListLength} cards)`}</div>
-      <TextArea className="cube-list"
-        placeholder='Cube List'
-        link='list'
-      />
+      <div>{`Or copy and paste your cube. One card per line!`}</div>
+      <div id="cube-categories">
+        {
+          App.state.categories.map((category, index) => (
+            <div
+              className="column"
+              key={index}
+            >
+              <div>{`Category ${index + 1}`}</div>
+              <div>
+                <span>{"Cards per pack: "}</span>
+                <Select
+                  value={category.numSlots}
+                  onChange={App._emit("updateCategoryNumSlots", index)}
+                  opts={utils.seq(App.state.cards, 0)} />
+              </div>
+              <textarea 
+                className="cube-list"
+                placeholder={`Category ${index + 1}`}
+                value={category.list}
+                onChange={App._emit("updateCategoryList", index)}
+              />
+            </div>
+          ))
+        }
+      </div>
+      <div>
+        <button onClick={App._emit("addCategory")}>Add category</button>
+        {
+          App.state.categories.length > 1 && (
+            <button onClick={App._emit("removeCategory")}>Remove category</button>
+          )
+        }
+        
+      </div>
     </Fragment>
   );
 };
@@ -70,7 +97,7 @@ const CubeCobra = () => {
       setError("");
       setCubeImportMessage(`The cube with ID "${cubeId}" was imported`);
 
-      App.save("list", cardNames);
+      App.save("categories", [{ list: cardNames, numSlots: App.state.cards }]);
     } catch (_) {
       setError(`Could not retrieve CubeCobra list with ID "${cubeId}" (${_})`);
       setCubeImportMessage("");

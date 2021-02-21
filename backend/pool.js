@@ -15,20 +15,32 @@ const addCardId = (card) => ({
 
 const addCardIdsToBoosterCards = (pack) => pack.map(addCardId);
 
-const SealedCube = ({ cubeList, playersLength, playerPoolSize = 90 }) => {
-  return DraftCube({
-    cubeList,
+const SealedCube = ({ cubeCategories, playersLength, playerPoolSize = 90, playerPackSize }) => {
+  const packsPerPlayer = Math.ceil(playerPoolSize / playerPackSize);
+  const packs = DraftCube({
+    cubeCategories,
     playersLength,
-    packsNumber: 1,
-    playerPackSize: playerPoolSize
+    packsNumber: packsPerPlayer,
+    playerPackSize
   });
+  return range(playersLength).map(() => {
+    const playerPacks = packs.splice(0, packsPerPlayer).flat();
+    return shuffle(playerPacks).slice(0,playerPoolSize);
+  })
 };
 
-const DraftCube = ({ cubeList, playersLength, packsNumber = 3, playerPackSize = 15 }) => {
-  let list = shuffle(cubeList); // copy the list to work on it
+const DraftCube = ({ cubeCategories, playersLength, packsNumber = 3, playerPackSize = 15 }) => {
+  const shuffledCategories = cubeCategories.map(category => ({
+    list: shuffle(category.list),
+    numSlots: category.numSlots
+  }))
 
   return range(playersLength * packsNumber)
-    .map(() => list.splice(0, playerPackSize).map(getCardByName))
+    .map(() => 
+      shuffledCategories
+        .flatMap(category => category.list.splice(0, category.numSlots))
+        .map(getCardByName)
+    )
     .map(addCardIdsToBoosterCards);
 };
 

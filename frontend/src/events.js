@@ -162,6 +162,24 @@ const events = {
     App.state.picksPerPack = event.currentTarget.value;
     App.update();
   },
+  addCategory() {
+    const updatedCategories = [...App.state.categories, {list: "", numSlots: 0}];
+    App.state.categories = updatedCategories;
+    App.update();
+  },
+  removeCategory() {
+    const updatedCategories = App.state.categories.slice(0, -1);
+    App.state.categories = updatedCategories;
+    App.update();
+  },
+  updateCategoryList(index, event) {
+    App.state.categories[index].list = event.currentTarget.value;
+    App.update();
+  },
+  updateCategoryNumSlots(index, event) {
+    App.state.categories[index].numSlots = Number(event.currentTarget.value);
+    App.update();
+  },
   pool(cards) {
     const zoneName = App.state.side ? ZONE_SIDEBOARD : ZONE_MAIN;
     this.state.gameState.addToPool(zoneName, cards);
@@ -363,22 +381,25 @@ ${codify(App.state.gameState.get(ZONE_SIDEBOARD))}
 };
 
 const parseCubeOptions = () => {
-  let {list, cards, packs, cubePoolSize, burnsPerPack} = App.state;
+  let {categories, cards, packs, cubePoolSize, burnsPerPack} = App.state;
   cards = Number(cards);
   packs = Number(packs);
   cubePoolSize = Number(cubePoolSize);
 
-  list = list
-    .split("\n")
-    .map(x => x
-      .trim()
-      .replace(/^\d+.\s*/, "")
-      .replace(/\s*\/+\s*/g, " // ")
-      .toLowerCase())
-    .filter(x => x)
-    .join("\n");
+  categories = categories.map(category => {
+    const parsedList = category.list
+      .split("\n")
+      .map(x => x
+        .trim()
+        .replace(/^\d+.\s*/, "")
+        .replace(/\s*\/+\s*/g, " // ")
+        .toLowerCase())
+      .filter(x => x)
+      .join("\n");
+    return { numSlots: category.numSlots, list: parsedList };
+  })
 
-  return {list, cards, packs, cubePoolSize, burnsPerPack};
+  return {categories, cards, packs, cubePoolSize, burnsPerPack};
 };
 
 const clickPack = (card) => {

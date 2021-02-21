@@ -44,14 +44,16 @@ module.exports = class Game extends Room {
       this.isDecadent = true;
       break;
     case "cube draft":
-      this.packsInfo = `${cube.packs} packs with ${cube.cards} cards from a pool of ${cube.list.length} cards`;
+      const totalDraftPoolSize = cube.categories.map(category => category.list.length).reduce((x, y) => x + y);
+      this.packsInfo = `${cube.packs} packs with ${cube.cards} cards from a pool of ${totalDraftPoolSize} cards`;
       if (cube.burnsPerPack > 0) {
         this.packsInfo += ` and ${cube.burnsPerPack} cards to burn per pack`;
       }
       this.rounds = this.cube.packs;
       break;
     case "cube sealed":
-      this.packsInfo = `${cube.cubePoolSize} cards per player from a pool of ${cube.list.length} cards`;
+      const totalSealedPoolSize = cube.categories.map(category => category.list.length).reduce((x, y) => x + y);
+      this.packsInfo = `${cube.cubePoolSize} cards per player from a pool of ${totalSealedPoolSize} cards`;
       this.rounds = this.cube.packs;
       break;
     case "chaos draft":
@@ -337,7 +339,7 @@ module.exports = class Game extends Room {
       }
     });
     const cubeHash = /cube/.test(this.type)
-      ? crypto.createHash("SHA512").update(this.cube.list.join("")).digest("hex")
+      ? crypto.createHash("SHA512").update(this.cube.categories.map(c => c.list.join("")).join("")).digest("hex")
       : "";
 
     const draftcap = {
@@ -463,7 +465,7 @@ module.exports = class Game extends Room {
     switch (this.type) {
     case "cube draft": {
       this.pool = Pool.DraftCube({
-        cubeList: this.cube.list,
+        cubeCategories: this.cube.categories,
         playersLength: this.players.length,
         packsNumber: this.cube.packs,
         playerPackSize: this.cube.cards
@@ -472,9 +474,10 @@ module.exports = class Game extends Room {
     }
     case "cube sealed": {
       this.pool = Pool.SealedCube({
-        cubeList: this.cube.list,
+        cubeCategories: this.cube.categories,
         playersLength: this.players.length,
-        playerPoolSize: this.cubePoolSize
+        playerPoolSize: this.cubePoolSize,
+        playerPackSize: this.cube.cards
       });
       break;
     }

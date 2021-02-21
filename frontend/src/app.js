@@ -42,7 +42,7 @@ let App = {
     setsSealed: [],
     setsDecadentDraft: [],
     availableSets: {},
-    list: "",
+    categories: [{list: "", numSlots: 0}],
     cards: 15,
     packs: 3,
     cubePoolSize: 90,
