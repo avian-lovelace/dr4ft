@@ -1,6 +1,3 @@
-# Tgieseking's dr4ft fork
+# Robin's dr4ft fork
 
-This is a fork of [dr4ft](https://github.com/dr4fters/dr4ft) for me to mess around with. Some things that I am considering trying to implement:
-* One rare per pack option in cube drafts
-* Different sorting for pack/picks
-* Drag and drop sorting
+This is a fork of [dr4ft](https://github.com/dr4fters/dr4ft) that I've played around with. I've implemented a setting for one rare per pack in cube drafts on branch `rare-per-pack-upshifting` and custom pack slots and card categories in cube drafts on branch `asfan-groupings`. I just did the minimum to get these features working for my own playgroup, and quite a bit work would be needed to productionalize it. Minimum additional work would include adding pre-draft checks that valid packs can be formed (e.g. there are enough rares in the cube to put one in each pack) and adding tests for the new functionality.
